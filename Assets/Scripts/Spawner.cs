@@ -88,12 +88,32 @@ public class Spawner : MonoBehaviour
         var obstacle = Instantiate(obstaclePrefab, transform);
 
         // Move it to the target location.
-        var spawnDown = RandomBool();
-        obstacle.transform.position += (Vector3)(spawnDown ? 
-            spawnOffset + (1.0f - spawnSize) / 2.0f : 
-            -spawnOffset - (1.0f - spawnSize) / 2.0f
-        );
-        
+        var spawnPos = RandomPos();
+
+        // Spawn either 1 obstacle on the ground or the ceiling or 2 obstacles on both sides.
+        if (spawnPos <= 0.33) 
+            obstacle.transform.position += (Vector3)(spawnOffset + (1.0f - spawnSize) / 2.0f);
+        else if (spawnPos > 0.66) 
+            obstacle.transform.position += (Vector3)(-spawnOffset - (1.0f - spawnSize) / 2.0f);
+        else
+        {
+            // Spawn a second obstacle.
+            var obstacle2 = Instantiate(obstaclePrefab, transform);
+
+            obstacle.transform.position += new Vector3(0.0f, spawnOffset.y + (1.0f - spawnSize) / 2.0f, 0.0f);
+            obstacle2.transform.position += new Vector3(0.0f, -spawnOffset.y - (1.0f - spawnSize) / 2.0f, 0.0f);
+
+            // Scale it.
+            obstacle.transform.localScale = new Vector3(spawnSize, spawnSize, spawnSize);
+            obstacle2.transform.localScale = new Vector3(spawnSize, spawnSize, spawnSize);
+
+            // Move the obstacle into the correct layer.
+            obstacle.layer = LayerMask.NameToLayer(spawnLayer);
+            obstacle2.layer = LayerMask.NameToLayer(spawnLayer);
+            
+            return;
+        }
+
         // Scale it.
         obstacle.transform.localScale = new Vector3(spawnSize, spawnSize, spawnSize);
         
@@ -161,6 +181,6 @@ public class Spawner : MonoBehaviour
     /// Generate a random bool - coin flip.
     /// </summary>
     /// <returns>Return a random boolean value.</returns>
-    public static bool RandomBool()
-    { return Random.value >= 0.5; }
+    public static float RandomPos()
+    { return Random.value; }
 }
